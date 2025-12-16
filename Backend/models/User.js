@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    refreshToken: String,
     profileImage: String
 });
 

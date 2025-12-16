@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { generateToken } from '../utils/token.js';
+import { generateAccessToken, generateRefreshToken } from '../utils/token.js';
 
 
 export const signUp = async (req, res) => {
@@ -40,8 +41,6 @@ export const signUp = async (req, res) => {
     await newUser.save();
 
 
-const token = generateToken(newUser)
-
 
 
     return res.status(201).json({
@@ -50,8 +49,7 @@ const token = generateToken(newUser)
         id: newUser._id,
         username: newUser.username,
         email: newUser.email
-      },
-      token
+      }
     });
 
   } catch (error) {
@@ -82,7 +80,12 @@ export const logIn = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "invalid credentials" });
     }
-    const token = generateToken(user);
+const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+
+user.refreshToken = refreshToken;
+await user.save();
+
 
     return res.status(200).json({
       message: "User Logged In Successfully",
@@ -91,7 +94,8 @@ export const logIn = async (req, res) => {
         username: user.username,
         email: user.email
       },
-      token
+      refreshToken,
+      accessToken
     });
 
 
@@ -99,4 +103,41 @@ export const logIn = async (req, res) => {
     console.error("Signup Error:", error);
     return res.status(500).json({ message: "Server error during registration." });
   }
+};
+
+
+
+export const refresh = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Refresh token is required." });
+  }
+  const user = await User.findOne({ refreshToken });
+  if (!user) {
+    return res.status(403).json({ message: "Invalid refresh token." });
+  }
+
+  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid refresh token." });
+    }
+    const accessToken = generateAccessToken(user);
+    return res.status(200).json({ accessToken });
+  });
+};
+
+
+export const logOut = async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Refresh token is required." });
+  }
+  const user = await User.findOne({ refreshToken });
+  if (!user) {
+    return res.status(403).json({ message: "Invalid refresh token." });
+  }
+  user.refreshToken = null;
+  await user.save();
+  return res.status(200).json({ message: "User logged out successfully." });
 };
