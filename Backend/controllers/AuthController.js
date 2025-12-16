@@ -38,9 +38,15 @@ export const signUp = async (req, res) => {
       profileImage
     });
 
-    await newUser.save();
+  
 
 
+    const accessToken = generateAccessToken(newUser);
+  const refreshToken = generateRefreshToken(newUser);
+
+newUser.refreshToken = refreshToken;
+
+  await newUser.save();
 
 
     return res.status(201).json({
@@ -49,7 +55,8 @@ export const signUp = async (req, res) => {
         id: newUser._id,
         username: newUser.username,
         email: newUser.email
-      }
+      },      refreshToken,
+      accessToken
     });
 
   } catch (error) {

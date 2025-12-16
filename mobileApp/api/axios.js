@@ -9,7 +9,7 @@ const getDefaultBaseURL = () => {
 };
 
 // const baseURL = process.env.EXPO_PUBLIC_API_URL ?? getDefaultBaseURL();
-const baseURL = `http://192.168.1.44:3000/api`
+const baseURL = `http://192.168.1.22:3000/api`
 
 const api = axios.create({ baseURL });
 

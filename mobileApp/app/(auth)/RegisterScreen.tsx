@@ -1,39 +1,51 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState, useContext } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import Input from "../../components/Input";
-import axios from "axios";
+import api from "@/api/axios";
+const logo = require('../../assets/images/logo.png');
+import { AuthContext } from "../../context/AuthContext";
 
 const RegisterScreen: React.FC = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+    const { register} = useContext(AuthContext);
+  
 
   const handleRegister = async () => {
-    await axios.post("http://localhost:3000/api/auth/register", {
-      username,
-      email,
-      password,
-    });
-    alert("Registered successfully");
+    try {
+      await register(username, email, password);
+    } catch (error) {
+      console.log("Registration error:", error instanceof Error ? error.message : String(error));
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.logoContainer}>
+          <Image source={logo} style={styles.logo} />
+        </View>
+        <Text style={styles.title}>Register</Text>
 
-      <Input placeholder="Username" value={username} onChangeText={setUsername} />
-      <Input placeholder="Email" value={email} onChangeText={setEmail} />
-      <Input
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+        <Input placeholder="Username" value={username} onChangeText={setUsername} />
+        <Input placeholder="Email" value={email} onChangeText={setEmail} />
+        <Input
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Create Account</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Create Account</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -42,8 +54,20 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
     padding: 20,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    resizeMode: "contain",
   },
   title: {
     fontSize: 28,
