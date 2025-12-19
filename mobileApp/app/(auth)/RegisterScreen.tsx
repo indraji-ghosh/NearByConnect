@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import Input from "../../components/Input";
-import api from "@/api/axios";
 const logo = require('../../assets/images/logo.png');
 import { AuthContext } from "../../context/AuthContext";
 

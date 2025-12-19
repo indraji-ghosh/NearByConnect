@@ -39,7 +39,7 @@ export const AuthProvider = ({children}) =>{
             setUser(data.user);
             console.log("Login Successful:", data);
              console.log(data.accessToken)
-        router.push('/home')
+        router.push('/(app)/Chats');
 
 
             // Set auth header for subsequent requests
@@ -63,6 +63,7 @@ export const AuthProvider = ({children}) =>{
             setUser(null);
             delete api.defaults.headers.common["Authorization"];
             await SecureStore.deleteItemAsync("refreshToken");
+            router.push('/(auth)/LoginScreen');
         }
 
     }
@@ -81,7 +82,7 @@ export const AuthProvider = ({children}) =>{
             api.defaults.headers.common["Authorization"] = `Bearer ${data.accessToken}`;
             await SecureStore.setItemAsync("refreshToken", data.refreshToken);
             
-            router.push('/home');
+            router.push('/(app)/Chats');
             return data.user;
         } catch (err) {
             throw err;

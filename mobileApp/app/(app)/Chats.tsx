@@ -1,23 +1,40 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { use, useContext, useEffect } from "react";
-import { router } from "expo-router";
-import { AuthContext } from "../context/AuthContext";
+import { use, useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import useLocationUpdate from "@/hooks/useLocationUpdate";
+import { io } from "socket.io-client";
+
+
 
 export default function HomeScreen() {
   const { user, accessToken, logout } = useContext(AuthContext);
-
-  // 🔒 Guard: if token is missing, redirect to login
-  useEffect(() => {
-    if (!accessToken) {
-      router.replace("/(auth)/LoginScreen");
-    }
-  }, [accessToken]);
-
-  // ⏳ Prevent blank flash
-  if (!accessToken) {
-    return null;
-  }
+  const { location } = useLocationUpdate();
  
+useEffect(() => {
+  console.log("User location:", location?.coords);
+}, [location]);
+
+useEffect(() => {
+  const socket = io("http://192.168.1.22:3000", {
+    transports: ["websocket"],
+    auth: {
+      token: accessToken,
+    },
+  });
+
+  socket.on("connect", () => {
+    console.log("Socket connected:", socket.id);
+  });
+
+  socket.on("connect_error", err => {
+    console.log("Connection error:", err.message);
+  });
+
+  return () => {
+    socket.disconnect();
+    console.log("Socket disconnected");
+  };
+}, [accessToken]);
 
   return (
     <View style={styles.container}>
@@ -30,11 +47,12 @@ export default function HomeScreen() {
         style={styles.button}
         onPress={async () => {
           await logout();
-          router.replace("/(auth)/LoginScreen");
         }}
       >
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
+
+      <Text>Current location: {location ? `${location.coords.latitude}, ${location.coords.longitude}` : 'Loading...'}</Text>
     </View>
   );
 }
