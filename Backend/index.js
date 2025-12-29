@@ -3,11 +3,14 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js'
 import locationRoutes from './routes/locationRoutes.js';
 import findPeople from './routes/findNearByPeopleRoutes.js';
+import ChatRoutes from './routes/ChatRoutes.js';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import http from 'http';
 import { Server } from 'socket.io';
+import { Message } from './models/Message.js';
+import Chat from './models/Chat.js';
 dotenv.config();
 
 const app = express();
@@ -56,6 +59,28 @@ io.on("connection", (socket) => {
   userSockets.get(userId).add(socket);
   socketUsers.set(socket.id, userId);
 
+
+   socket.on("joinChat", ({chatId}) => {
+    socket.join(chatId);
+    console.log(`User ${userId} joined chat ${chatId}`);
+  });
+
+
+    socket.on("sendMessage", async ({ chatId, senderId, text }) => {
+    const message = await Message.create({
+      chatId,
+      senderId,
+      text
+    });
+
+
+    await Chat.findByIdAndUpdate(chatId, {
+      lastMessage: text
+    });
+
+    io.to(chatId).emit("newMessage", message);
+  });
+
   socket.on("disconnect", () => {
     console.log(`User disconnected: ${userId}`);
 userSockets.get(userId).delete(socket.id);
@@ -70,6 +95,7 @@ userSockets.get(userId).delete(socket.id);
 app.use('/api/auth', authRoutes)
 app.use('/api/location', locationRoutes)
 app.use('/api/people', findPeople)
+app.use('/api/chat', ChatRoutes)
 
 app.get('/', (_req, res)=>{
     res.send("<h1>Hello</h1>")

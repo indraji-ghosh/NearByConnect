@@ -5,12 +5,11 @@ import { Platform } from 'react-native';
 const getDefaultBaseURL = () => {
     const port = 3000;
     if (Platform.OS === 'android') return `http://10.0.2.2:${port}/api`;
-    return `http://192.168.1.44:${port}/api`;
+    return `http://192.168.1.24:${port}/api`;
 };
 
 // const baseURL = process.env.EXPO_PUBLIC_API_URL ?? getDefaultBaseURL();
-const baseURL = `http://192.168.1.22:3000/api`
-
+const baseURL = `http://192.168.1.24:3000/api`
 const api = axios.create({ baseURL });
 
 // Refresh token on 403 responses

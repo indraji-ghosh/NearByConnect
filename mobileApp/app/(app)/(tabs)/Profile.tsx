@@ -8,6 +8,8 @@ import {
   StyleSheet,
   StatusBar,
 } from 'react-native';
+import { useContext } from 'react';
+import { AuthContext } from '@/context/AuthContext';
 import Feather from '@expo/vector-icons/Feather';
 export default function ProfilePage() {
   const [locationVisible, setLocationVisible] = useState(true);
@@ -20,7 +22,11 @@ export default function ProfilePage() {
     { icon: '🍕', label: 'Foodie', color: '#FED7AA' },
     { icon: '🎨', label: 'Art', color: '#FBCFE8' },
   ];
+  const { logout } = useContext(AuthContext);
 
+  const handleLogout = () => {
+    logout();
+  }
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -112,8 +118,15 @@ export default function ProfilePage() {
                   </Text>
                 </TouchableOpacity>
               </View>
+              
             </View>
+              <View>
+            <TouchableOpacity style={styles.button} onPress={handleLogout}>
+              <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
           </View>
+          </View>
+        
 
           <View style={{ height: 40 }} />
         </ScrollView>
@@ -280,5 +293,17 @@ const styles = StyleSheet.create({
   toggleTextInactive: {
     color: '#6B7280',
     right: 8,
+  },
+  button: {
+    backgroundColor: "#000",
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

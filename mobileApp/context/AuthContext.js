@@ -39,7 +39,8 @@ export const AuthProvider = ({children}) =>{
             setUser(data.user);
             console.log("Login Successful:", data);
              console.log(data.accessToken)
-        router.push('/(app)/Chats');
+        router.replace('/(app)/(tabs)/(chat)');
+
 
 
             // Set auth header for subsequent requests
@@ -82,7 +83,7 @@ export const AuthProvider = ({children}) =>{
             api.defaults.headers.common["Authorization"] = `Bearer ${data.accessToken}`;
             await SecureStore.setItemAsync("refreshToken", data.refreshToken);
             
-            router.push('/(app)/Chats');
+            router.push('/(app)/(chat)');
             return data.user;
         } catch (err) {
             throw err;

@@ -1,5 +1,5 @@
 export interface Person {
-  id: string;
+  _id: string;
   username: string;
   isOnline: boolean;
   distance: number;

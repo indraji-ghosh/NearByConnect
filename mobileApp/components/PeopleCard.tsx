@@ -2,12 +2,38 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Person } from '@/types';
+import { router, useRouter } from 'expo-router';
+import { useContext } from 'react';
+import { AuthContext } from '@/context/AuthContext';
+import { createOrGetChat } from '@/api/chatApi';
 
 interface PeopleCardProps {
   user: Person;
 }
 
 const PeopleCard = ({ user }: PeopleCardProps) => {
+  const { user: authUser } = useContext(AuthContext);
+  const router = useRouter();
+  const userId = authUser?.id;
+  console.log("Auth User ID in PeopleCard:", userId);
+console.log("User prop ID in PeopleCard:", user._id);
+
+  const openChat = async (otherUserId : string) => {
+    const chat = await createOrGetChat(userId, otherUserId);
+    console.log("Other ID:", otherUserId);
+    console.log("Chat ID:", chat._id);
+
+    router.push({
+      pathname: "/(app)/(tabs)/(chat)/[chatId]",
+      params: {
+        chatId: chat._id,
+        userId,
+      },
+    });
+  
+
+  };
+
   return (
     <View style={styles.card} >
       <View style={styles.header}>
@@ -26,7 +52,7 @@ const PeopleCard = ({ user }: PeopleCardProps) => {
           </View>
         </View>
         
-        <TouchableOpacity style={styles.messageButton}>
+        <TouchableOpacity style={styles.messageButton}  onPress={() => openChat(user._id)}>
           <MaterialIcons name="message" size={18} color="white"/>
           <Text style={styles.messageText}>Message</Text>
         </TouchableOpacity>
