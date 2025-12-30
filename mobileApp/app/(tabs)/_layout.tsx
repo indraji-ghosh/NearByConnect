@@ -8,7 +8,7 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen
-        name="(chat)"
+        name="Chat"
         options={{
           title: 'Chats',
           tabBarIcon: ({ color, size }) => (

@@ -18,16 +18,17 @@ const PeopleCard = ({ user }: PeopleCardProps) => {
   console.log("Auth User ID in PeopleCard:", userId);
 console.log("User prop ID in PeopleCard:", user._id);
 
-  const openChat = async (otherUserId : string) => {
+  const openChat = async (otherUserId : string, username: string) => {
     const chat = await createOrGetChat(userId, otherUserId);
     console.log("Other ID:", otherUserId);
     console.log("Chat ID:", chat._id);
 
     router.push({
-      pathname: "/(app)/(tabs)/(chat)/[chatId]",
+      pathname: "/(chat)/[chatId]",
       params: {
         chatId: chat._id,
         userId,
+        name: user.username
       },
     });
   
@@ -52,7 +53,7 @@ console.log("User prop ID in PeopleCard:", user._id);
           </View>
         </View>
         
-        <TouchableOpacity style={styles.messageButton}  onPress={() => openChat(user._id)}>
+        <TouchableOpacity style={styles.messageButton}  onPress={() => openChat(user._id, user.username)}>
           <MaterialIcons name="message" size={18} color="white"/>
           <Text style={styles.messageText}>Message</Text>
         </TouchableOpacity>

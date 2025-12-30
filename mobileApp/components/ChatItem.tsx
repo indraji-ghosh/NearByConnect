@@ -1,42 +1,53 @@
 import { router } from "expo-router";
+import { use } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 interface ChatItemProps {
     id: number;
     name: string;
     message: string;
-    time: string;
-    unread: boolean;
-    avatarBg: string;
-    messageColor?: string;
+    userId: string;
+    otherUserId: string;
+    // time: string;
+    unread: number;
+    // avatarBg: string;
+    // messageColor?: string;
 }
 
-const handlePress = () => {
+const handlePress = (id: string, userId: string, name: string) => {
     // Handle chat item press, e.g., navigate to chat detail
-    router.push('/(app)/(tabs)/(chat)/chat');
+    router.push({
+      pathname: '/(chat)/[chatId]',
+      params: { chatId: id , userId: userId , name: name} // Replace 'currentUserId' with actual user ID
+    });
 }
 
-const ChatItem = ({ id, name, message, time, unread, avatarBg, messageColor }: ChatItemProps) => (
 
-  <TouchableOpacity style={styles.chatItem} key={id.toString()} onPress={handlePress}>
+const ChatItem = ({ id, name, message, userId, unread }: ChatItemProps) => (
+
+  <TouchableOpacity style={styles.chatItem} key={id} onPress={() => handlePress(id.toString(), userId, name)}>
     <View style={styles.avatarContainer}>
-      <View style={[styles.avatar, { backgroundColor: avatarBg }]}>
-        <Text style={styles.avatarText}>{name.charAt(0)}</Text>
-      </View>
+      <View style={[styles.avatar, { backgroundColor: 'green' }]}>
+        <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+      </View> 
     </View>
 
     <View style={styles.chatContent}>
       <View style={styles.chatHeader}>
         <Text style={styles.chatName}>{name}</Text>
-        <Text style={styles.chatTime}>{time}</Text>
+        {/* <Text style={styles.chatTime}>{time}</Text> */}
       </View>
       <View style={styles.chatFooter}>
         <Text 
-          style={[styles.chatMessage, messageColor && { color: messageColor }]} 
+          style={[styles.chatMessage, { color: 'gray' }]} 
           numberOfLines={1}
         >
           {message}
         </Text>
-        {unread && <View style={styles.unreadBadge} />}
+              {unread > 0 && (
+        <View style={styles.unreadBadge}>
+          <Text style={styles.unreadText}>{unread}</Text>
+        </View>
+      )}
       </View>
     </View>
   </TouchableOpacity>
@@ -115,12 +126,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   unreadBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#9ca3af',
-    marginLeft: 8,
-  }
+  backgroundColor: "#008000",
+  minWidth: 22,
+  height: 22,
+  borderRadius: 11,
+  alignItems: "center",
+  justifyContent: "center",
+},
+unreadText: {
+  color: "#fff",
+  fontSize: 12,
+  fontWeight: "bold",
+},
 })
 
 export default ChatItem;

@@ -26,7 +26,7 @@ function RootLayout() {
       {!accessToken ? (
         <Stack.Screen name="(auth)" />
       ) : (
-        <Stack.Screen name="(app)" />
+        <Stack.Screen name="(tabs)" />
       )}
     </Stack>
   );

@@ -11,6 +11,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { Message } from './models/Message.js';
 import Chat from './models/Chat.js';
+import { send } from 'process';
 dotenv.config();
 
 const app = express();
@@ -74,9 +75,24 @@ io.on("connection", (socket) => {
     });
 
 
-    await Chat.findByIdAndUpdate(chatId, {
-      lastMessage: text
-    });
+  const chat = await Chat.findById(chatId);
+
+  // Increase unread for other users
+  chat.participants.forEach((userId) => {
+    if (userId.toString() !== senderId) {
+      const current = chat.unreadCounts.get(userId.toString()) || 0;
+      chat.unreadCounts.set(userId.toString(), current + 1);
+    }
+  });
+
+  chat.lastMessage = {
+    text,
+    sender: senderId,
+    timestamp: new Date(),
+    updatedAt: new Date()
+  };
+
+  await chat.save();
 
     io.to(chatId).emit("newMessage", message);
   });

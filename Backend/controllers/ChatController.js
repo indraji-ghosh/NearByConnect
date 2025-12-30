@@ -33,3 +33,30 @@ export const getChatMessages = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch messages" });
   }
 };
+
+
+export const getUserChats = async (req, res) => {
+  try {
+    const { userId } = req.params;
+     const chats = await Chat.find({
+    participants: userId
+  })
+    .populate("participants", "username profileImage")
+    .sort({ updatedAt: -1 });
+    res.status(200).json(chats);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch chats" });
+  }
+};
+
+
+export const markChatAsRead = async (req, res) => {
+  const { chatId } = req.params;
+  const { userId } = req.body;
+
+  await Chat.findByIdAndUpdate(chatId, {
+    $set: { [`unreadCounts.${userId}`]: 0 },
+  });
+
+  res.json({ success: true });
+};

@@ -1,7 +1,8 @@
+import api from '@/api/axios';
 import { fetchChatMessages } from '@/api/chatApi';
 import {socket} from '@/socket';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, use } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,9 +17,10 @@ interface Message {
 
 export default function ChatInterface() {
 
-  const { chatId, userId } = useLocalSearchParams<{
+  const { chatId, userId, name } = useLocalSearchParams<{
     chatId?: string;
     userId?: string;
+    name?: string;
   }>();
 
 
@@ -48,7 +50,7 @@ export default function ChatInterface() {
   useEffect(() => {
     console.log("Chat Interface loaded with chatId:", chatId, "and userId:", userId);
     
-    // Join the chat room
+    
    
     socket?.emit("joinChat", { chatId });
 
@@ -98,6 +100,19 @@ export default function ChatInterface() {
   loadMessages();
 }, [chatId]);
 
+useEffect(() => {
+  const markAsRead = async () => {
+    try {
+      await api.post(`/chat/markAsRead/${chatId}`, { userId });
+      console.log("Marked chat as read");
+    } catch (err) {
+      console.error("Failed to mark chat as read", err);
+    }
+  };
+
+  markAsRead();
+}, [chatId, userId]);
+
   const renderMessage = ({ item }: { item: Message }) => {
     const isCurrentUser = item.senderId === userId;
     
@@ -110,7 +125,7 @@ export default function ChatInterface() {
       >
         {!isCurrentUser && (
           <View style={styles.smallAvatar}>
-            <Text style={styles.smallAvatarText}>JS</Text>
+            <Text style={styles.smallAvatarText}>{name?.charAt(0).toUpperCase()}</Text>
           </View>
         )}
         <View
@@ -133,7 +148,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -144,12 +159,12 @@ export default function ChatInterface() {
           <View style={styles.profileSection}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>JS</Text>
+                <Text style={styles.avatarText}>{name?.charAt(0).toUpperCase()}</Text>
               </View>
               <View style={styles.onlineIndicator} />
             </View>
             <View>
-              <Text style={styles.name}>Jane Smith</Text>
+              <Text style={styles.name}>{name}</Text>
               <Text style={styles.status}>Online</Text>
             </View>
           </View>
