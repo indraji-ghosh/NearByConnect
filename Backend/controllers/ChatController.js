@@ -60,3 +60,23 @@ export const markChatAsRead = async (req, res) => {
 
   res.json({ success: true });
 };
+
+
+
+export const markMessagesAsRead = async (req, res) => {
+  const { userId } = req.body;
+  const { chatId } = req.params;
+
+  await Message.updateMany(
+    {
+      chatId,
+      sender: { $ne: userId },
+      readBy: { $ne: userId },
+    },
+    {
+      $addToSet: { readBy: userId },
+    }
+  );
+
+  res.json({ success: true });
+};

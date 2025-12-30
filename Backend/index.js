@@ -71,7 +71,8 @@ io.on("connection", (socket) => {
     const message = await Message.create({
       chatId,
       senderId,
-      text
+      text,
+      readBy:[]
     });
 
 
@@ -95,6 +96,10 @@ io.on("connection", (socket) => {
   await chat.save();
 
     io.to(chatId).emit("newMessage", message);
+    io.to(chatId).emit("messages-read", {
+      chatId,
+      readerId: userId,
+    });
   });
 
   socket.on("disconnect", () => {

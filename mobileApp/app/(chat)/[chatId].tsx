@@ -11,6 +11,7 @@ interface Message {
   text: string;
   senderId: string;
   timestamp?: number;
+  readBy?: string[];
 }
 
 
@@ -23,6 +24,12 @@ export default function ChatInterface() {
     name?: string;
   }>();
 
+
+  const getTickStatus = (msg: Message) => {
+  if (msg.senderId !== userId) return null;
+  if (msg.readBy && msg.readBy.length > 0) return "read";
+  return "sent";
+};
 
   // Validate route params exist
   if (!chatId || !userId) {
@@ -47,25 +54,43 @@ export default function ChatInterface() {
   const [messageText, setMessageText] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
-  useEffect(() => {
-    console.log("Chat Interface loaded with chatId:", chatId, "and userId:", userId);
-    
-    
-   
-    socket?.emit("joinChat", { chatId });
+useEffect(() => {
+  if (!chatId || !userId) return;
 
-    // Listen for new messages
-    const handleNewMessage = (message: Message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    };
+  socket.emit("joinChat", { chatId });
 
-    socket?.on("newMessage", handleNewMessage);
+  const handleNewMessage = (message: Message) => {
+    setMessages((prev) => [...prev, message]);
+  };
 
-    // Cleanup on unmount
-    return () => {
-      socket?.off("newMessage", handleNewMessage);
-    };
-  }, [chatId, userId]);
+  const handleMessagesRead = ({ readerId }: { readerId: string }) => {
+    setMessages((prev) =>
+      prev.map((msg) => {
+        // ONLY update messages I SENT
+        if (msg.senderId === userId) {
+          const alreadyRead = msg.readBy?.includes(readerId);
+          if (alreadyRead) return msg;
+
+          return {
+            ...msg,
+            readBy: [...(msg.readBy || []), readerId],
+          };
+        }
+        return msg;
+      })
+    );
+  };
+
+  socket.on("newMessage", handleNewMessage);
+  socket.on("messages-read", handleMessagesRead);
+
+  return () => {
+    socket.off("newMessage", handleNewMessage);
+    socket.off("messages-read", handleMessagesRead);
+  };
+}, [chatId, userId]);
+
+
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -105,13 +130,25 @@ useEffect(() => {
     try {
       await api.post(`/chat/markAsRead/${chatId}`, { userId });
       console.log("Marked chat as read");
+      
     } catch (err) {
       console.error("Failed to mark chat as read", err);
     }
   };
 
   markAsRead();
+  markMessagesAsRead()
 }, [chatId, userId]);
+
+const markMessagesAsRead = async () => {
+  try {
+    await api.post(`/chat/markMessagesAsRead/${chatId}`, { userId });
+    console.log("Marked messages as read");
+    
+  } catch (err) {
+    console.error("Failed to mark messages as read", err);
+  }
+};
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isCurrentUser = item.senderId === userId;
@@ -141,7 +178,12 @@ useEffect(() => {
             ]}
           >
             {item.text}
-          </Text>
+          </Text> 
+          {isCurrentUser && (
+            <Text style={styles.tickStatus}>
+              {getTickStatus(item) === "read" ? "✓✓" : "✓"}
+            </Text>
+          )}
         </View>
       </View>
     );
@@ -407,5 +449,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  tickStatus: {
+    fontSize: 12,
+    color: '#fff',
+    alignSelf: 'flex-end',
+    marginTop: 4,
   },
 });

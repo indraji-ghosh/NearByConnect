@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from "react-native";
-import {  use, useContext, useEffect, useState } from "react";
+import {  use, useCallback, useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import useLocationUpdate from "@/hooks/useLocationUpdate";
 import ChatItem from "@/components/ChatItem";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { socket } from "@/socket";
 import api from "@/api/axios";
+import { useFocusEffect } from "expo-router";
 
 
 
@@ -19,15 +20,16 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
 
   /* ---------------- LOCATION DEBUG ---------------- */
-  useEffect(() => {
-    console.log("User location:", location?.coords);
-  }, [location]);
+  // useEffect(() => {
+  //   console.log("User location:", location?.coords);
+  // }, [location]);
 
   /* ---------------- FETCH CHATS ---------------- */
-  useEffect(() => {
-    if (!user?.id) return;
+useFocusEffect(
+  useCallback(() => {
     fetchMyChats();
-  }, [user?.id]);
+  }, [])
+);
 
   const fetchMyChats = async () => {
     try {

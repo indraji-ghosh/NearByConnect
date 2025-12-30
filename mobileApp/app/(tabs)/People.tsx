@@ -4,6 +4,7 @@ import {
   Text,
   View,
   ToastAndroid,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import useLocationUpdate from "@/hooks/useLocationUpdate";
@@ -71,13 +72,13 @@ const People = () => {
       </View>
 
       {/* People List */}
-      <View style={styles.content}>
+      <ScrollView style={styles.content}>
       {nearbyPeople.nearbyUsers.map((user) => (
        <Fragment key={user.username}>
         <PeopleCard user={user} />
         </Fragment>
       ))}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
